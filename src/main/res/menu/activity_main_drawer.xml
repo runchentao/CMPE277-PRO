@@ -11,10 +11,14 @@
         <item
             android:id="@+id/nav_gallery"
             android:icon="@drawable/ic_baseline_call_made_24"
-            android:title="Send Crypto" />
+            android:title="Send Crypto"
+
+            />
         <item
             android:id="@+id/nav_slideshow"
             android:icon="@drawable/ic_baseline_info_24"
-            android:title="About MetaWallet" />
+            android:title="About MetaWallet"
+
+            />
     </group>
 </menu>

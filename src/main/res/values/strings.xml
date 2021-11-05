@@ -11,7 +11,7 @@
     <string name="menu_gallery">Send Crypto</string>
     <string name="menu_slideshow">About MetaWallet</string>
 
-    <string name="status_not_connected">(Not Connected)</string>
+    <string name="status_connected">(Wallet Connected)</string>
 
     <string name="create_wallet">create wallet</string>
     <string name="connect">connect to a node</string>
@@ -19,7 +19,7 @@
     <string name="balance"> retrieve balance</string>
     <string name="send">Send</string>
     <string name="please_check_your_balance"> your balance will be shown here</string>
-    <string name="your_balance">\" your balance in wei is : \"</string>
+    <string name="balance_unit">ETH</string>
     <string name="enter_eth_value_to_send">enter Eth value to send</string>
     <string name="create_etherium_wallet">Create Etherium Wallet</string>
     <string name="enter_wallet_name">Wallet name</string>

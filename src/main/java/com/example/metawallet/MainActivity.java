@@ -1,8 +1,12 @@
 package com.example.metawallet;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Menu;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -56,7 +60,13 @@ public class MainActivity extends AppCompatActivity {
     // UI
     EditText editTextWalletName;
     EditText editTextWalletPassword;
+    Button buttonCreate;
+    Button buttonLoad;
+    TextView textViewOr;
     TextView textViewWalletAddress;
+    TextView textViewStatus;
+    RelativeLayout onConnected;
+    RelativeLayout walletControl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,12 +89,23 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
+        navigationView.getMenu().findItem(R.id.nav_gallery).setEnabled(false);
+        navigationView.getMenu().findItem(R.id.nav_slideshow).setEnabled(false);
+
+        onConnected = findViewById(R.id.on_connected);
+        walletControl = findViewById(R.id.wallet_control);
         // Edit Text
         editTextWalletName = findViewById(R.id.wallet_path);
         editTextWalletPassword = findViewById(R.id.password);
 
         // Text Views
         textViewWalletAddress = findViewById(R.id.wallet_address);
+        textViewOr = findViewById(R.id.textview_or);
+        textViewStatus = findViewById(R.id.status);
+
+        // Button
+        buttonCreate = findViewById(R.id.create_btn);
+        buttonLoad = findViewById(R.id.load_btn);
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -107,7 +128,10 @@ public class MainActivity extends AppCompatActivity {
                 file.mkdirs();
                 Walletname = WalletUtils.generateLightNewWalletFile(password, file);
                 credentials = WalletUtils.loadCredentials(password, file + "/" + Walletname);
-                textViewWalletAddress.setText(credentials.getAddress());
+
+                setWalletAddress(credentials.getAddress());
+                hideAfterConnect();
+                onConnected();
             }
             else
                 toast("Directory already created");
@@ -130,10 +154,26 @@ public class MainActivity extends AppCompatActivity {
             else {
                 File walletFile = file.listFiles()[0];
                 credentials = WalletUtils.loadCredentials(password, walletFile);
-                textViewWalletAddress.setText(credentials.getAddress());
+
+                setWalletAddress(credentials.getAddress());
+                hideAfterConnect();
+                onConnected();
             }
         }
         catch(Exception e){
+            toast(e.getMessage());
+        }
+    }
+
+    public void retrieveWalletBalance (View v)  {
+        try {
+            EthGetBalance balanceWei = web3.ethGetBalance(credentials.getAddress(), DefaultBlockParameterName.LATEST).sendAsync().get();
+            BigDecimal balanceInEther = Convert.fromWei(balanceWei.getBalance().toString(), Convert.Unit.ETHER);
+
+            TextView textViewBalance = findViewById(R.id.wallet_balance);
+            textViewBalance.setText( balanceInEther.toString() + " " + getString(R.string.balance_unit));
+        }
+        catch (Exception e){
             toast(e.getMessage());
         }
     }
@@ -181,5 +221,37 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(() -> {
             Toast.makeText(this, message, Toast.LENGTH_LONG).show();
         });
+    }
+
+    public void hideAfterConnect() {
+        editTextWalletName.setVisibility(View.GONE);
+        editTextWalletPassword.setVisibility(View.GONE);
+        buttonCreate.setVisibility(View.GONE);
+        buttonLoad.setVisibility(View.GONE);
+        textViewOr.setVisibility(View.GONE);
+    }
+
+    public void onConnected(){
+        onConnected.setVisibility(View.VISIBLE);
+        walletControl.setVisibility(View.VISIBLE);
+        textViewStatus.setText(R.string.status_connected);
+    }
+
+    public void setWalletAddress(String address){
+        String subAddress = address.substring(0,5) + "..." + address.substring(address.length() - 4);
+        textViewWalletAddress.setText(subAddress);
+    }
+
+    public void copyWalletAddress(View v){
+        try{
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("address", credentials.getAddress());
+            clipboard.setPrimaryClip(clip);
+            toast("Copied");
+        }
+        catch (Exception e){
+            toast(e.getMessage());
+        }
+
     }
 }
