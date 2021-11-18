@@ -134,7 +134,24 @@ public class MainActivity extends AppCompatActivity {
 
         web3 = Web3j.build(new HttpService("https://ropsten.infura.io/v3/478f7d1e640c4555b852ecf764e1ef38"));
         setupBouncyCastle();
+
+        timerHandler.postDelayed(timerRunnable, 0);
     }
+
+    private Handler timerHandler = new Handler();
+    private boolean shouldRun = true;
+    private Runnable timerRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (credentials != null)
+                shouldRun = true;
+            if (shouldRun) {
+                retrieveWalletBalance2();
+                //run again after 200 milliseconds (1/5 sec)
+                timerHandler.postDelayed(this, 2000);
+            }
+        }
+    };
 
 
     public void createWallet(View v)  {
@@ -189,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         catch(Exception e){
-            toast(e.getMessage());
+            //toast(e.getMessage());
         }
     }
 
@@ -205,6 +222,30 @@ public class MainActivity extends AppCompatActivity {
         }
         catch (Exception e){
             toast(e.getMessage());
+        }
+    }
+
+    public void retrieveWalletBalance2 ()  {
+        try {
+            //toast("Im here");
+            if(credentials != null){
+                EthGetBalance balanceWei = web3.ethGetBalance(credentials.getAddress(), DefaultBlockParameterName.LATEST).sendAsync().get();
+                BigDecimal balanceInEther = Convert.fromWei(balanceWei.getBalance().toString(), Convert.Unit.ETHER);
+
+                TextView textViewBalance = findViewById(R.id.wallet_balance);
+                textViewBalance.setText( balanceInEther.toString() + " " + getString(R.string.balance_unit));
+
+                setWalletAddress(credentials.getAddress());
+
+                TextView connection_status = findViewById(R.id.status);
+
+                connection_status.setText("Wallet Connected");
+
+                shouldRun = false;
+            }
+        }
+        catch (Exception e){
+            //toast(e.getMessage());
         }
     }
 
