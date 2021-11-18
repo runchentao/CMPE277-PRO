@@ -1,17 +1,25 @@
 package com.example.metawallet;
 
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -32,6 +40,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.w3c.dom.Text;
+import org.web3j.crypto.CipherException;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
@@ -43,6 +53,7 @@ import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.Transfer;
 import org.web3j.utils.Convert;
 import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.security.Provider;
 import java.security.Security;
@@ -51,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityMainBinding binding;
+    private ActionBarDrawerToggle toggle;
 
     Web3j web3;
     File file;
@@ -85,13 +97,25 @@ public class MainActivity extends AppCompatActivity {
                 R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow)
                 .setOpenableLayout(drawer)
                 .build();
+
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
-        navigationView.getMenu().findItem(R.id.nav_gallery).setEnabled(false);
-        navigationView.getMenu().findItem(R.id.nav_slideshow).setEnabled(false);
+        toggle = new ActionBarDrawerToggle(this, drawer, binding.appBarMain.toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close){
+            public void onDrawerClosed(View view) {
+                super.onDrawerClosed(view);
+                invalidateOptionsMenu();
+            }
 
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                invalidateOptionsMenu();
+            }
+        };
+        drawer.setDrawerListener(toggle);
+
+        // ------------------------------------------------------------------------------------
         onConnected = findViewById(R.id.on_connected);
         walletControl = findViewById(R.id.wallet_control);
         // Edit Text
@@ -100,21 +124,18 @@ public class MainActivity extends AppCompatActivity {
 
         // Text Views
         textViewWalletAddress = findViewById(R.id.wallet_address);
-        textViewOr = findViewById(R.id.textview_or);
         textViewStatus = findViewById(R.id.status);
 
         // Button
         buttonCreate = findViewById(R.id.create_btn);
-        buttonLoad = findViewById(R.id.load_btn);
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
         web3 = Web3j.build(new HttpService("https://ropsten.infura.io/v3/478f7d1e640c4555b852ecf764e1ef38"));
         setupBouncyCastle();
-
-        testNetworkConnection();
     }
+
 
     public void createWallet(View v)  {
         EditText Edtpassword = findViewById(R.id.password);
@@ -129,9 +150,7 @@ public class MainActivity extends AppCompatActivity {
                 Walletname = WalletUtils.generateLightNewWalletFile(password, file);
                 credentials = WalletUtils.loadCredentials(password, file + "/" + Walletname);
 
-                setWalletAddress(credentials.getAddress());
-                hideAfterConnect();
-                onConnected();
+                //setWalletAddress(credentials.getAddress());
             }
             else
                 toast("Directory already created");
@@ -142,10 +161,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void loadWallet(View v)  {
-        EditText Edtpassword = findViewById(R.id.password);
+        EditText Edtpassword = findViewById(R.id.load_wallet_password);
+        EditText EdtWalletName = findViewById(R.id.load_wallet_path);
+
         final String password = Edtpassword.getText().toString();
         try {
-            final String walletFilePath = editTextWalletName.getText().toString();
+            final String walletFilePath = EdtWalletName.getText().toString();
             file = new File(getFilesDir() + "/" + walletFilePath);
 
             if (!file.exists()) {
@@ -154,10 +175,17 @@ public class MainActivity extends AppCompatActivity {
             else {
                 File walletFile = file.listFiles()[0];
                 credentials = WalletUtils.loadCredentials(password, walletFile);
+                toast("Wallet loaded, your address is:" + credentials.getAddress());
 
-                setWalletAddress(credentials.getAddress());
-                hideAfterConnect();
-                onConnected();
+//                Bundle extras = new Bundle();
+//
+//                extras.putString("password", password);
+//                extras.putString("path", walletFilePath);
+//
+//                Intent refresh = new Intent(this, MainActivity.class);
+//                refresh.putExtras(extras);
+//                startActivity(refresh);//Start the same Activity
+//                finish(); //finish Activity.
             }
         }
         catch(Exception e){
@@ -172,6 +200,8 @@ public class MainActivity extends AppCompatActivity {
 
             TextView textViewBalance = findViewById(R.id.wallet_balance);
             textViewBalance.setText( balanceInEther.toString() + " " + getString(R.string.balance_unit));
+
+            setWalletAddress(credentials.getAddress());
         }
         catch (Exception e){
             toast(e.getMessage());
@@ -223,23 +253,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void hideAfterConnect() {
-        editTextWalletName.setVisibility(View.GONE);
-        editTextWalletPassword.setVisibility(View.GONE);
-        buttonCreate.setVisibility(View.GONE);
-        buttonLoad.setVisibility(View.GONE);
-        textViewOr.setVisibility(View.GONE);
-    }
-
-    public void onConnected(){
-        onConnected.setVisibility(View.VISIBLE);
-        walletControl.setVisibility(View.VISIBLE);
-        textViewStatus.setText(R.string.status_connected);
-    }
-
     public void setWalletAddress(String address){
+        TextView wallet_address_view = findViewById(R.id.wallet_address);
         String subAddress = address.substring(0,5) + "..." + address.substring(address.length() - 4);
-        textViewWalletAddress.setText(subAddress);
+        wallet_address_view.setText(subAddress);
     }
 
     public void copyWalletAddress(View v){
@@ -253,5 +270,30 @@ public class MainActivity extends AppCompatActivity {
             toast(e.getMessage());
         }
 
+    }
+
+    public void syncWallet() {
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
+        if (extras != null){
+            String password = extras.getString("password");
+            String path = extras.getString("path");
+            file = new File(getFilesDir() + "/" + path);
+            File walletFile = file.listFiles()[0];
+            try {
+                credentials = WalletUtils.loadCredentials(password, walletFile);
+                textViewStatus.setText(R.string.status_connected);
+                setWalletAddress(credentials.getAddress());
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (CipherException e) {
+                e.printStackTrace();
+            }
+            toast("Your address is:" + credentials.getAddress());
+        }
+        else
+        {
+            toast("credential is null");
+        }
     }
 }
