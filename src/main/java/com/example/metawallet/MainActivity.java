@@ -1,6 +1,7 @@
 package com.example.metawallet;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -15,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.example.metawallet.ui.home.HomeFragment;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 
@@ -126,6 +128,8 @@ public class MainActivity extends AppCompatActivity {
         textViewWalletAddress = findViewById(R.id.wallet_address);
         textViewStatus = findViewById(R.id.status);
 
+
+
         // Button
         buttonCreate = findViewById(R.id.create_btn);
 
@@ -134,8 +138,6 @@ public class MainActivity extends AppCompatActivity {
 
         web3 = Web3j.build(new HttpService("https://ropsten.infura.io/v3/478f7d1e640c4555b852ecf764e1ef38"));
         setupBouncyCastle();
-
-        timerHandler.postDelayed(timerRunnable, 0);
     }
 
     private Handler timerHandler = new Handler();
@@ -156,9 +158,12 @@ public class MainActivity extends AppCompatActivity {
 
     public void createWallet(View v)  {
         EditText Edtpassword = findViewById(R.id.password);
-        final String password = Edtpassword.getText().toString();  // this will be your etherium password
+        EditText editTextWalletPath = findViewById(R.id.wallet_path);
+
+        final String password = Edtpassword.getText().toString();
+        final String walletFilePath = editTextWalletPath.getText().toString();
         try {
-            final String walletFilePath = editTextWalletName.getText().toString();
+
             file = new File(getFilesDir() + "/" + walletFilePath);
 
             if (!file.exists()) {
@@ -166,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
                 file.mkdirs();
                 Walletname = WalletUtils.generateLightNewWalletFile(password, file);
                 credentials = WalletUtils.loadCredentials(password, file + "/" + Walletname);
-
+                toast("Wallet Created");
                 //setWalletAddress(credentials.getAddress());
             }
             else
@@ -212,22 +217,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void retrieveWalletBalance (View v)  {
         try {
-            EthGetBalance balanceWei = web3.ethGetBalance(credentials.getAddress(), DefaultBlockParameterName.LATEST).sendAsync().get();
-            BigDecimal balanceInEther = Convert.fromWei(balanceWei.getBalance().toString(), Convert.Unit.ETHER);
-
-            TextView textViewBalance = findViewById(R.id.wallet_balance);
-            textViewBalance.setText( balanceInEther.toString() + " " + getString(R.string.balance_unit));
-
-            setWalletAddress(credentials.getAddress());
-        }
-        catch (Exception e){
-            toast(e.getMessage());
-        }
-    }
-
-    public void retrieveWalletBalance2 ()  {
-        try {
-            //toast("Im here");
             if(credentials != null){
                 EthGetBalance balanceWei = web3.ethGetBalance(credentials.getAddress(), DefaultBlockParameterName.LATEST).sendAsync().get();
                 BigDecimal balanceInEther = Convert.fromWei(balanceWei.getBalance().toString(), Convert.Unit.ETHER);
@@ -238,10 +227,28 @@ public class MainActivity extends AppCompatActivity {
                 setWalletAddress(credentials.getAddress());
 
                 TextView connection_status = findViewById(R.id.status);
-
                 connection_status.setText("Wallet Connected");
+            }
+        }
+        catch (Exception e){
+            toast(e.getMessage());
+        }
+    }
 
-                shouldRun = false;
+    public void retrieveWalletBalance2 ()  {
+        try {
+            toast("Im here");
+            if(credentials != null){
+                EthGetBalance balanceWei = web3.ethGetBalance(credentials.getAddress(), DefaultBlockParameterName.LATEST).sendAsync().get();
+                BigDecimal balanceInEther = Convert.fromWei(balanceWei.getBalance().toString(), Convert.Unit.ETHER);
+
+                TextView textViewBalance = findViewById(R.id.wallet_balance);
+                textViewBalance.setText( balanceInEther.toString() + " " + getString(R.string.balance_unit));
+
+                setWalletAddress(credentials.getAddress());
+
+                TextView connection_status = findViewById(R.id.status);
+                connection_status.setText("(Wallet Connected)");
             }
         }
         catch (Exception e){
