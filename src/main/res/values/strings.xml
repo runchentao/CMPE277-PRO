@@ -17,7 +17,6 @@
     <string name="connect">connect to a node</string>
     <string name="address">0x000...0000</string>
     <string name="balance"> retrieve balance</string>
-    <string name="send">Send</string>
     <string name="please_check_your_balance"> your balance will be shown here</string>
     <string name="balance_unit">ETH</string>
     <string name="enter_eth_value_to_send">enter Eth value to send</string>
@@ -31,4 +30,8 @@
     <string name="home_tab1">TOKENS</string>
     <string name="home_tab2">NFTs</string>
     <string name="default_usd_balance">$ 0.00</string>
+
+    <string name="receiver_address">Send To</string>
+    <string name="send_amount">0 ETH</string>
+    <string name="send">Send</string>
 </resources>

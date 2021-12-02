@@ -16,8 +16,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
+import android.view.inputmethod.EditorInfo;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.androidnetworking.AndroidNetworking;
@@ -98,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
     TextView textViewStatus;
     //RelativeLayout onConnected;
     RelativeLayout walletControl;
+    //ScrollView home;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Button
         buttonCreate = findViewById(R.id.create_btn);
+        buttonLoad = findViewById(R.id.load_wallet_btn);
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -159,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
         OkHttpClient okHttpClient = new OkHttpClient() .newBuilder().build();
         AndroidNetworking.initialize(getApplicationContext(),okHttpClient);
 
-        AndroidNetworking.setParserFactory(new JacksonParserFactory());
+        //AndroidNetworking.setParserFactory(new JacksonParserFactory(4));
 
         AndroidNetworking.get("https://api.coinbase.com/v2/prices/ETH-USD/spot")
                 .setPriority(Priority.LOW)
@@ -177,17 +181,15 @@ public class MainActivity extends AppCompatActivity {
                             eth_usd_spot_rate = temp[13];
                         }
                         catch (Exception e){
+                            toast("rate loaded");
                             eth_usd_spot_rate = "4572";
                         }
                     }
                 });
 
+
         web3 = Web3j.build(new HttpService("https://ropsten.infura.io/v3/478f7d1e640c4555b852ecf764e1ef38"));
         setupBouncyCastle();
-    }
-
-    public void calculateUsdBalance(String rateStr){
-
     }
 
     public void createWallet(View v)  {
@@ -201,10 +203,10 @@ public class MainActivity extends AppCompatActivity {
             file = new File(getFilesDir() + "/" + walletFilePath);
 
             if (!file.exists()) {
-                toast(file.getPath());
                 file.mkdirs();
                 Walletname = WalletUtils.generateLightNewWalletFile(password, file);
                 credentials = WalletUtils.loadCredentials(password, file + "/" + Walletname);
+                walletName = walletFilePath;
                 toast("Wallet Created");
             }
             else
@@ -212,6 +214,26 @@ public class MainActivity extends AppCompatActivity {
         }
         catch(Exception e){
             toast(e.getMessage());
+        }
+    }
+
+
+    public void sendTransaction(View v) {
+//        if(credentials == null){
+//            toast("Wallet is not connected");
+//            return;
+//        }
+        EditText sendAmount = findViewById(R.id.send_amount);
+        EditText receiver = findViewById(R.id.receiver_address);
+        String receiverAddress = receiver.getText().toString();
+
+        BigDecimal value = new BigDecimal(sendAmount.getText().toString());
+        try{
+            TransactionReceipt receipt = Transfer.sendFunds(web3, credentials,receiverAddress,value, Convert.Unit.ETHER).send();
+            Toast.makeText(this, "Transaction successful: " +receipt.getTransactionHash(), Toast.LENGTH_LONG).show();
+        }
+        catch(Exception e){
+            toast("No have sufficient ETH balance");
         }
     }
 
@@ -231,7 +253,7 @@ public class MainActivity extends AppCompatActivity {
                 File walletFile = file.listFiles()[0];
                 credentials = WalletUtils.loadCredentials(password, walletFile);
                 walletName = EdtWalletName.getText().toString();
-                toast("Wallet loaded, your address is:" + credentials.getAddress());
+                toast("Wallet loaded");
             }
         }
         catch(Exception e){
@@ -250,8 +272,6 @@ public class MainActivity extends AppCompatActivity {
 
                 setWalletAddress(credentials.getAddress());
 
-//                TextView connection_status = findViewById(R.id.status);
-//                connection_status.setText("Wallet Connected");
             }
         }
         catch (Exception e){
@@ -270,9 +290,6 @@ public class MainActivity extends AppCompatActivity {
                 textViewBalance.setText( balanceInEther.toString() + " " + getString(R.string.balance_unit));
 
                 setWalletAddress(credentials.getAddress());
-
-//                TextView connection_status = findViewById(R.id.status);
-//                connection_status.setText("Wallet Connected");
 
                 TextView textViewWalletName = findViewById(R.id.wallet_name_text_view);
                 textViewWalletName.setText(walletName);
@@ -304,18 +321,19 @@ public class MainActivity extends AppCompatActivity {
         Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
-    public void testNetworkConnection() {
-        try {
-            Web3ClientVersion clientVersion = web3.web3ClientVersion().sendAsync().get();
-            if (!clientVersion.hasError()) {
-                toast("Connected to Ethereum network");
-            } else {
-                toast(clientVersion.getError().getMessage());
-            }
-        } catch (Exception e) {
-            toast(e.getMessage());
-        }
-    }
+
+//    public void testNetworkConnection() {
+//        try {
+//            Web3ClientVersion clientVersion = web3.web3ClientVersion().sendAsync().get();
+//            if (!clientVersion.hasError()) {
+//                toast("Connected to Ethereum network");
+//            } else {
+//                toast(clientVersion.getError().getMessage());
+//            }
+//        } catch (Exception e) {
+//            toast(e.getMessage());
+//        }
+//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -331,12 +349,6 @@ public class MainActivity extends AppCompatActivity {
                 || super.onSupportNavigateUp();
     }
 
-    public void toast(String message) {
-        runOnUiThread(() -> {
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-        });
-    }
-
     public void setWalletAddress(String address){
         TextView wallet_address_view = findViewById(R.id.wallet_address);
         String subAddress = address.substring(0,5) + "..." + address.substring(address.length() - 4);
@@ -348,36 +360,16 @@ public class MainActivity extends AppCompatActivity {
             ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
             ClipData clip = ClipData.newPlainText("address", credentials.getAddress());
             clipboard.setPrimaryClip(clip);
-            toast("Copied");
+            toast("Wallet Address Copied");
         }
         catch (Exception e){
-            toast(e.getMessage());
+            //toast(e.getMessage(), "OK");
         }
-
     }
 
-    public void syncWallet() {
-        Intent intent = getIntent();
-        Bundle extras = intent.getExtras();
-        if (extras != null){
-            String password = extras.getString("password");
-            String path = extras.getString("path");
-            file = new File(getFilesDir() + "/" + path);
-            File walletFile = file.listFiles()[0];
-            try {
-                credentials = WalletUtils.loadCredentials(password, walletFile);
-                textViewStatus.setText(R.string.status_connected);
-                setWalletAddress(credentials.getAddress());
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (CipherException e) {
-                e.printStackTrace();
-            }
-            toast("Your address is:" + credentials.getAddress());
-        }
-        else
-        {
-            toast("credential is null");
-        }
+    public void toast(String message) {
+        runOnUiThread(() -> {
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        });
     }
 }
