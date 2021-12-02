@@ -2,110 +2,260 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     android:orientation="vertical">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
         android:orientation="vertical"
-        android:weightSum="5"
         >
-
-        <RelativeLayout
-            android:id="@+id/on_connected"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginTop="20dp"
-            android:layout_weight="3"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:layout_gravity="center"
+            android:gravity="start"
+            android:layout_marginTop="10dp"
             >
+            <View
+                android:layout_marginLeft="15dp"
+                android:layout_width="10dp"
+                android:layout_height="match_parent"
+                android:background="@drawable/custom_rectangle_robsten" />
 
             <TextView
-                android:id="@+id/test"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-
-                />
-
-            <TextView
-                android:id="@+id/status"
+                android:id="@+id/network"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentBottom="true"
-                android:layout_marginStart="20dp"
-                android:layout_marginLeft="20dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginRight="20dp"
-                android:layout_marginBottom="8dp"
                 android:gravity="center"
+                android:padding="5dp"
+                android:text="Robsten Test Network"
                 android:textAlignment="center"
-                android:text="Wallet disconnected"
+                android:textSize="12sp"
                 />
+        </LinearLayout>
 
-            <ImageView
-                android:id="@+id/eth_logo"
-                android:layout_width="20dp"
-                android:layout_height="match_parent"
-                android:layout_marginStart="50dp"
-                android:layout_toEndOf="@+id/status"
-                android:src="@drawable/ic_ethereum_eth_logo" />
-
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            >
             <TextView
-                android:id="@+id/wallet_balance"
+                android:id="@+id/wallet_name_text_view"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_alignParentEnd="false"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
-                android:layout_toEndOf="@+id/eth_logo"
-                android:gravity="center"
-                android:text="ETH balance"
-                android:textAlignment="center"
+                android:layout_marginTop="5dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:text="Wallet not connected"
+                android:textSize="20sp"
                 android:textColor="@color/black"
-                android:textSize="18dp"
-                android:textStyle="bold" />
-        </RelativeLayout>
+                />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:shadowRadius="1"
+                android:background="@color/light_grey"
+            />
 
-        <RelativeLayout
-            android:id="@+id/wallet_control"
+            <TextView
+                android:id="@+id/total_usd_balance"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginTop="18dp"
+                android:layout_marginBottom="12dp"
+                android:text="@string/default_usd_balance"
+                android:textSize="35sp"
+                android:fontFamily="@font/roboto_light"
+                android:textColor="@color/black"
+                />
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="119dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:gravity="center"
             >
-
-            <Button
+<!--            <TextView-->
+<!--                android:id="@+id/status"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:gravity="center"-->
+<!--                android:textAlignment="center"-->
+<!--                android:text="Wallet disconnected"-->
+<!--                android:textSize="14dp"-->
+<!--                android:padding="5dp"-->
+<!--                android:background="@drawable/custom_rectangle"-->
+<!--                />-->
+            <TextView
                 android:id="@+id/wallet_address"
-                style="?android:attr/borderlessButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginRight="20dp"
-                android:layout_toStartOf="@+id/retrieve_balance_btn"
-                android:background="@android:color/transparent"
-                android:gravity="center"
-                android:onClick="copyWalletAddress"
                 android:textAlignment="center"
-                android:textColor="@color/black"
-                android:textIsSelectable="true"
-                android:textSize="15sp" />
+                android:text="@string/address"
+                android:fontFamily="@font/roboto_light"
+                android:background="@drawable/custom_rectangle_grey"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:textSize="12sp"
+                android:clickable="true"
+                android:onClick="copyWalletAddress"
+                />
+        </LinearLayout>
 
-            <Button
-                android:id="@+id/retrieve_balance_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentEnd="true"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginEnd="20dp"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="30dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            >
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
                 android:gravity="center"
-                android:onClick="retrieveWalletBalance"
-                android:text="Check Eth Balance"
-                android:textAlignment="center" />
-        </RelativeLayout>
+                android:orientation="vertical"
+                >
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="@string/home_tab1"
+                    android:textSize="14sp"
+                    android:textAlignment="center"
+                    android:textColor="@color/black"
+                    />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="5dp"
+                    android:shadowRadius="2"
+                    android:background="@color/primary"
+                    />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="@string/home_tab2"
+                    android:textSize="14sp"
+                    android:textAlignment="center"
+                    android:textColor="@color/black"
+                    ></TextView>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="5dp"
+                    android:shadowRadius="2"
+
+                    />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:shadowRadius="1"
+            android:background="@color/light_grey"
+        />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="start"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            >
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                >
+                <ImageView
+                    android:id="@+id/eth_logo"
+                    android:layout_width="50dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:src="@drawable/ic_ethereum_eth_logo" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:layout_marginLeft="0dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:gravity="center_vertical"
+                    >
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        >
+                        <TextView
+                            android:id="@+id/wallet_balance"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0.00 ETH"
+                            android:textColor="@color/black"
+                            android:textSize="14sp"
+                            android:textAlignment="center"
+                            />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        >
+                        <TextView
+                            android:id="@+id/eth_usd_balance"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/default_usd_balance"
+                            android:textSize="12sp"
+                            android:textAlignment="center"
+                            android:fontFamily="@font/roboto_light"
+                            />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:shadowRadius="1"
+                android:background="@color/light_grey"
+            />
+
+<!--            <Button-->
+<!--                android:id="@+id/retrieve_balance_btn"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_alignParentTop="true"-->
+<!--                android:layout_alignParentEnd="true"-->
+<!--                android:layout_marginStart="20dp"-->
+<!--                android:layout_marginTop="20dp"-->
+<!--                android:layout_marginEnd="20dp"-->
+<!--                android:gravity="center"-->
+<!--                android:onClick="retrieveWalletBalance"-->
+<!--                android:text="Check Eth Balance"-->
+<!--                android:textAlignment="center" />-->
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

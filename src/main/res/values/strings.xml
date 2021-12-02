@@ -2,20 +2,20 @@
     <string name="app_name">MetaWallet</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">MetaWallet (Version 0.1)</string>
+    <string name="nav_header_title">MetaWallet (Version 0.2)</string>
     <string name="nav_header_subtitle">runchen.tao@sjsu.edu</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
 
-    <string name="menu_home">MetaWallet</string>
-    <string name="menu_gallery">Send Crypto</string>
-    <string name="menu_slideshow">About MetaWallet</string>
+    <string name="menu_home">My MetaWallet</string>
+    <string name="menu_gallery">Load Wallet</string>
+    <string name="menu_slideshow">Create Wallet</string>
 
     <string name="status_connected">(Wallet Connected)</string>
 
     <string name="create_wallet">create wallet</string>
     <string name="connect">connect to a node</string>
-    <string name="address">ADDRESS</string>
+    <string name="address">0x000...0000</string>
     <string name="balance"> retrieve balance</string>
     <string name="send">Send</string>
     <string name="please_check_your_balance"> your balance will be shown here</string>
@@ -27,4 +27,8 @@
     <string name="connect_to_etherium_network">Connect to Etherium Network</string>
     <string name="send_etherium">Send Etherium</string>
     <string name="address_label">\"Wallet address: \"</string>
+
+    <string name="home_tab1">TOKENS</string>
+    <string name="home_tab2">NFTs</string>
+    <string name="default_usd_balance">$ 0.00</string>
 </resources>

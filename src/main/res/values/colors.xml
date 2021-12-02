@@ -11,4 +11,6 @@
     <color name="secondary">#96C7C1</color>
     <color name="light">#DED9C4</color>
     <color name="dark">#D0CAB2</color>
+    <color name="robsten">#F64A8A</color>
+    <color name="light_grey">#ebecf0</color>
 </resources>

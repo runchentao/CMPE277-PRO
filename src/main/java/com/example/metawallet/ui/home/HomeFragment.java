@@ -30,23 +30,12 @@ public class HomeFragment extends Fragment {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-
-        //main.retrieveWalletBalance2();
-
-        //final TextView textView = binding.textHome;
-//        homeViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-//            @Override
-//            public void onChanged(@Nullable String s) {
-//                textView.setText(s);
-//            }
-//        });
         return root;
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        //Toast.makeText(getActivity(), "onStop", Toast.LENGTH_SHORT).show();
     }
 
     @Override

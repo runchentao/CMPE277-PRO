@@ -8,6 +8,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.BulletSpan;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -45,6 +48,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.w3c.dom.Text;
 import org.web3j.crypto.CipherException;
 import org.web3j.crypto.Credentials;
+import org.web3j.crypto.Wallet;
 import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
@@ -70,16 +74,17 @@ public class MainActivity extends AppCompatActivity {
     File file;
     String Walletname;
     Credentials credentials;
+    String walletName;
 
     // UI
     EditText editTextWalletName;
     EditText editTextWalletPassword;
     Button buttonCreate;
     Button buttonLoad;
-    TextView textViewOr;
+    TextView textViewWalletName;
     TextView textViewWalletAddress;
     TextView textViewStatus;
-    RelativeLayout onConnected;
+    //RelativeLayout onConnected;
     RelativeLayout walletControl;
 
     @Override
@@ -118,17 +123,16 @@ public class MainActivity extends AppCompatActivity {
         drawer.setDrawerListener(toggle);
 
         // ------------------------------------------------------------------------------------
-        onConnected = findViewById(R.id.on_connected);
-        walletControl = findViewById(R.id.wallet_control);
+        //onConnected = findViewById(R.id.on_connected);
+        //walletControl = findViewById(R.id.wallet_control);
         // Edit Text
         editTextWalletName = findViewById(R.id.wallet_path);
         editTextWalletPassword = findViewById(R.id.password);
 
         // Text Views
+        textViewWalletName = findViewById(R.id.wallet_name_text_view);
         textViewWalletAddress = findViewById(R.id.wallet_address);
-        textViewStatus = findViewById(R.id.status);
-
-
+//        textViewStatus = findViewById(R.id.status);
 
         // Button
         buttonCreate = findViewById(R.id.create_btn);
@@ -139,22 +143,6 @@ public class MainActivity extends AppCompatActivity {
         web3 = Web3j.build(new HttpService("https://ropsten.infura.io/v3/478f7d1e640c4555b852ecf764e1ef38"));
         setupBouncyCastle();
     }
-
-    private Handler timerHandler = new Handler();
-    private boolean shouldRun = true;
-    private Runnable timerRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (credentials != null)
-                shouldRun = true;
-            if (shouldRun) {
-                retrieveWalletBalance2();
-                //run again after 200 milliseconds (1/5 sec)
-                timerHandler.postDelayed(this, 2000);
-            }
-        }
-    };
-
 
     public void createWallet(View v)  {
         EditText Edtpassword = findViewById(R.id.password);
@@ -172,7 +160,6 @@ public class MainActivity extends AppCompatActivity {
                 Walletname = WalletUtils.generateLightNewWalletFile(password, file);
                 credentials = WalletUtils.loadCredentials(password, file + "/" + Walletname);
                 toast("Wallet Created");
-                //setWalletAddress(credentials.getAddress());
             }
             else
                 toast("Directory already created");
@@ -197,17 +184,8 @@ public class MainActivity extends AppCompatActivity {
             else {
                 File walletFile = file.listFiles()[0];
                 credentials = WalletUtils.loadCredentials(password, walletFile);
+                walletName = EdtWalletName.getText().toString();
                 toast("Wallet loaded, your address is:" + credentials.getAddress());
-
-//                Bundle extras = new Bundle();
-//
-//                extras.putString("password", password);
-//                extras.putString("path", walletFilePath);
-//
-//                Intent refresh = new Intent(this, MainActivity.class);
-//                refresh.putExtras(extras);
-//                startActivity(refresh);//Start the same Activity
-//                finish(); //finish Activity.
             }
         }
         catch(Exception e){
@@ -226,8 +204,8 @@ public class MainActivity extends AppCompatActivity {
 
                 setWalletAddress(credentials.getAddress());
 
-                TextView connection_status = findViewById(R.id.status);
-                connection_status.setText("Wallet Connected");
+//                TextView connection_status = findViewById(R.id.status);
+//                connection_status.setText("Wallet Connected");
             }
         }
         catch (Exception e){
@@ -237,7 +215,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void retrieveWalletBalance2 ()  {
         try {
-            toast("Im here");
             if(credentials != null){
                 EthGetBalance balanceWei = web3.ethGetBalance(credentials.getAddress(), DefaultBlockParameterName.LATEST).sendAsync().get();
                 BigDecimal balanceInEther = Convert.fromWei(balanceWei.getBalance().toString(), Convert.Unit.ETHER);
@@ -247,8 +224,11 @@ public class MainActivity extends AppCompatActivity {
 
                 setWalletAddress(credentials.getAddress());
 
-                TextView connection_status = findViewById(R.id.status);
-                connection_status.setText("(Wallet Connected)");
+//                TextView connection_status = findViewById(R.id.status);
+//                connection_status.setText("Wallet Connected");
+
+                TextView textViewWalletName = findViewById(R.id.wallet_name_text_view);
+                textViewWalletName.setText(walletName);
             }
         }
         catch (Exception e){
