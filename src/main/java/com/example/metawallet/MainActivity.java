@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.BulletSpan;
+import android.util.Log;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,6 +20,10 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.androidnetworking.AndroidNetworking;
+import com.androidnetworking.common.Priority;
+import com.androidnetworking.error.ANError;
+import com.androidnetworking.interfaces.JSONArrayRequestListener;
 import com.example.metawallet.ui.home.HomeFragment;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
@@ -33,6 +38,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.metawallet.databinding.ActivityMainBinding;
+import com.jacksonandroidnetworking.JacksonParserFactory;
 
 import java.io.File;
 
@@ -45,6 +51,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.json.JSONArray;
 import org.w3c.dom.Text;
 import org.web3j.crypto.CipherException;
 import org.web3j.crypto.Credentials;
@@ -64,6 +71,8 @@ import java.math.BigDecimal;
 import java.security.Provider;
 import java.security.Security;
 
+import okhttp3.OkHttpClient;
+
 public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
@@ -75,6 +84,9 @@ public class MainActivity extends AppCompatActivity {
     String Walletname;
     Credentials credentials;
     String walletName;
+    String eth_usd_spot_rate;
+    Double eth_balance;
+    Double usd_balance;
 
     // UI
     EditText editTextWalletName;
@@ -140,8 +152,42 @@ public class MainActivity extends AppCompatActivity {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
+        // For making API calls
+        AndroidNetworking.initialize(getApplicationContext());
+
+        // Adding an Network Interceptor for Debugging purpose :
+        OkHttpClient okHttpClient = new OkHttpClient() .newBuilder().build();
+        AndroidNetworking.initialize(getApplicationContext(),okHttpClient);
+
+        AndroidNetworking.setParserFactory(new JacksonParserFactory());
+
+        AndroidNetworking.get("https://api.coinbase.com/v2/prices/ETH-USD/spot")
+                .setPriority(Priority.LOW)
+                .build()
+                .getAsJSONArray(new JSONArrayRequestListener() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+
+                    }
+                    @Override
+                    public void onError(ANError error) {
+                        eth_usd_spot_rate = error.getMessage();
+                        String[] temp = eth_usd_spot_rate.split("\"");
+                        try {
+                            eth_usd_spot_rate = temp[13];
+                        }
+                        catch (Exception e){
+                            eth_usd_spot_rate = "4572";
+                        }
+                    }
+                });
+
         web3 = Web3j.build(new HttpService("https://ropsten.infura.io/v3/478f7d1e640c4555b852ecf764e1ef38"));
         setupBouncyCastle();
+    }
+
+    public void calculateUsdBalance(String rateStr){
+
     }
 
     public void createWallet(View v)  {
@@ -218,6 +264,7 @@ public class MainActivity extends AppCompatActivity {
             if(credentials != null){
                 EthGetBalance balanceWei = web3.ethGetBalance(credentials.getAddress(), DefaultBlockParameterName.LATEST).sendAsync().get();
                 BigDecimal balanceInEther = Convert.fromWei(balanceWei.getBalance().toString(), Convert.Unit.ETHER);
+                eth_balance = balanceInEther.doubleValue();
 
                 TextView textViewBalance = findViewById(R.id.wallet_balance);
                 textViewBalance.setText( balanceInEther.toString() + " " + getString(R.string.balance_unit));
@@ -229,6 +276,15 @@ public class MainActivity extends AppCompatActivity {
 
                 TextView textViewWalletName = findViewById(R.id.wallet_name_text_view);
                 textViewWalletName.setText(walletName);
+
+                TextView totBalance = findViewById(R.id.total_usd_balance);
+                TextView ethTousdBalance = findViewById(R.id.eth_usd_balance);
+                Double rate = Double.parseDouble(eth_usd_spot_rate);
+                if(eth_balance > 0.000000){
+                    usd_balance = eth_balance * rate;
+                    totBalance.setText(String.format("$ %.2f", usd_balance));
+                    ethTousdBalance.setText(String.format("$ %.2f", usd_balance));
+                }
             }
         }
         catch (Exception e){
