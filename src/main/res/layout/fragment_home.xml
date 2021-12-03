@@ -113,6 +113,22 @@
                 android:clickable="true"
                 android:onClick="copyWalletAddress"
                 />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:text="Reload"
+                android:fontFamily="@font/roboto_light"
+                android:background="@drawable/custom_rectangle_grey"
+                android:layout_marginLeft="10dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:textSize="12sp"
+                android:clickable="true"
+                android:onClick="refresh"
+                />
         </LinearLayout>
 
         <LinearLayout
@@ -280,6 +296,7 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/send_amount" />
             <Button
+                android:id="@+id/send_btn"
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"

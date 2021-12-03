@@ -6,6 +6,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.SpannableString;
@@ -149,9 +150,13 @@ public class MainActivity extends AppCompatActivity {
         textViewWalletAddress = findViewById(R.id.wallet_address);
 //        textViewStatus = findViewById(R.id.status);
 
+
+        //final LoadingDialog loadingDialog = new LoadingDialog(MainActivity.this);
+
         // Button
         buttonCreate = findViewById(R.id.create_btn);
         buttonLoad = findViewById(R.id.load_wallet_btn);
+
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -219,13 +224,17 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void sendTransaction(View v) {
-//        if(credentials == null){
-//            toast("Wallet is not connected");
-//            return;
-//        }
+        if(credentials == null){
+            toast("Wallet is not connected");
+            return;
+        }
         EditText sendAmount = findViewById(R.id.send_amount);
         EditText receiver = findViewById(R.id.receiver_address);
         String receiverAddress = receiver.getText().toString();
+        if(receiverAddress.isEmpty() || sendAmount.getText().toString().isEmpty()){
+            toast("Please enter a valid address or ETH amount");
+            return;
+        }
 
         BigDecimal value = new BigDecimal(sendAmount.getText().toString());
         try{
@@ -261,21 +270,33 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void retrieveWalletBalance (View v)  {
+    public void refresh (View v)  {
         try {
             if(credentials != null){
                 EthGetBalance balanceWei = web3.ethGetBalance(credentials.getAddress(), DefaultBlockParameterName.LATEST).sendAsync().get();
                 BigDecimal balanceInEther = Convert.fromWei(balanceWei.getBalance().toString(), Convert.Unit.ETHER);
+                eth_balance = balanceInEther.doubleValue();
 
                 TextView textViewBalance = findViewById(R.id.wallet_balance);
-                textViewBalance.setText( balanceInEther.toString() + " " + getString(R.string.balance_unit));
+                textViewBalance.setText( String.format("%.6f", eth_balance) + " " + getString(R.string.balance_unit));
 
                 setWalletAddress(credentials.getAddress());
 
+                TextView textViewWalletName = findViewById(R.id.wallet_name_text_view);
+                textViewWalletName.setText(walletName);
+
+                TextView totBalance = findViewById(R.id.total_usd_balance);
+                TextView ethTousdBalance = findViewById(R.id.eth_usd_balance);
+                Double rate = Double.parseDouble(eth_usd_spot_rate);
+                if(eth_balance > 0.000000){
+                    usd_balance = eth_balance * rate;
+                    totBalance.setText(String.format("$ %.2f", usd_balance));
+                    ethTousdBalance.setText(String.format("$ %.2f", usd_balance));
+                }
             }
         }
         catch (Exception e){
-            toast(e.getMessage());
+            //toast(e.getMessage());
         }
     }
 
@@ -287,7 +308,7 @@ public class MainActivity extends AppCompatActivity {
                 eth_balance = balanceInEther.doubleValue();
 
                 TextView textViewBalance = findViewById(R.id.wallet_balance);
-                textViewBalance.setText( balanceInEther.toString() + " " + getString(R.string.balance_unit));
+                textViewBalance.setText( String.format("%.6f", eth_balance) + " " + getString(R.string.balance_unit));
 
                 setWalletAddress(credentials.getAddress());
 
